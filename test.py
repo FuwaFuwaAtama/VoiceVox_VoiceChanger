@@ -7,8 +7,8 @@ import os
 SETTINGS_FILE = "device_settings.json"
 
 NOTIFICATIONS = {
-    "copy": os.path.join("notifications", "copy.wav"),
-    "could_not_understand": os.path.join("notifications", "could_not_understand.wav")
+    "test1": os.path.join("notifications", "test1.wav"),
+    "test2": os.path.join("notifications", "test2.wav")
 }
 
 def load_settings():
@@ -72,18 +72,18 @@ if __name__ == "__main__":
             print("エラー： 1つまたは両方の出力デバイスが見つかりません。終了します。")
             exit(1)
 
-        if not os.path.exists(NOTIFICATIONS["copy"]):
-            print(f"Error: '{NOTIFICATIONS['copy']}' not found.")
+        if not os.path.exists(NOTIFICATIONS["test1"]):
+            print(f"Error: '{NOTIFICATIONS['test1']}' not found.")
             exit(1)
-        if not os.path.exists(NOTIFICATIONS["could_not_understand"]):
-            print(f"Error: '{NOTIFICATIONS['could_not_understand']}' not found.")
+        if not os.path.exists(NOTIFICATIONS["test2"]):
+            print(f"Error: '{NOTIFICATIONS['test2']}' not found.")
             exit(1)
 
         print("ープ再生開始")
         while True:
-            play_sound(NOTIFICATIONS["copy"], voice_speaker_index, "COPY")
+            play_sound(NOTIFICATIONS["test1"], voice_speaker_index, "test1")
             time.sleep(1)
-            play_sound(NOTIFICATIONS["could_not_understand"], notification_speaker_index, "COULD_NOT_UNDERSTAND")
+            play_sound(NOTIFICATIONS["test2"], notification_speaker_index, "test2")
             time.sleep(1)
 
     except Exception as e:

@@ -114,18 +114,18 @@ if __name__ == "__main__":
 
     # Handle case when no matching devices are found
     if mic_index is None:
-        print(f"Microphone with keyword '{mic_keyword}' not found.")
+        print(f"キーワード'{mic_keyword}'を持つマイクが見つかりません。")
     else:
-        print(f"Selected Microphone: {mic_index} - {mic_name}")
+        print(f"選択されたマイク: {mic_index} - {mic_name}")
 
     if voice_output_device_index is None:
-        print(f"Speaker 1 with keyword '{voice_speaker_keyword}' not found.")
+        print(f"キーワード'{voice_speaker_keyword}'を持つ音声スピーカーが見つかりません。")
     else:
-        print(f"Selected Voice Speaker: {voice_output_device_index} - {speaker1_name}")
+        print(f"選択された音声スピーカー： {voice_output_device_index} - {voice_speaker_name}")
 
     if notification_output_device_index is None:
-        print(f"Speaker 2 with keyword '{notification_speaker_keyword}' not found.")
+        print(f"キーワード'{notification_speaker_keyword}'を持つ通知音用スピーカーが見つかりません。")
     else:
-        print(f"Selected Notification Speaker: {notification_output_device_index} - {speaker2_name}")
+        print(f"選択された音声スピーカー: {notification_output_device_index} - {notification_speaker_name}")
 
     # Now you can use mic_index, voice_output_device_index, and notification_output_device_index in your main program logic
