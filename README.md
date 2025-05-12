@@ -46,7 +46,7 @@
 
 ## 🤝 コントリビューション
 
-バグ報告、機能提案、プルリクエストは大歓迎です！[ [Issues](https://github.com/FuwaFuwaAtama/VoiceVox_VoiceChanger/issues)までお気軽にご連絡ください。
+バグ報告、機能提案、プルリクエストは大歓迎です！ [Issues](https://github.com/FuwaFuwaAtama/VoiceVox_VoiceChanger/issues)までお気軽にご連絡ください。
 
 ---
 
