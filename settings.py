@@ -12,6 +12,9 @@ def list_devices():
     device_list = []
     for i in range(p.get_device_count()):
         device = p.get_device_info_by_index(i)
+        # Skip devices with zero input and output
+        if device['maxInputChannels'] == 0 and device['maxOutputChannels'] == 0:
+            continue
         device_list.append((i, device['name'], device['maxInputChannels'], device['maxOutputChannels']))
     p.terminate()
     return device_list
@@ -27,53 +30,70 @@ def load_settings():
         with open(SETTINGS_FILE, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
-        return {"mic_keyword": "", "voice_speaker_keyword": "", "notification_speaker_keyword": ""}
+        return {
+            "mic_keyword": "",
+            "voice_speaker_keyword": "",
+            "notification_speaker_keyword": ""
+        }
 
 # GUI for selecting devices
 def show_device_selector():
     def apply_and_save():
-        """Save the selected keywords to settings and close the window."""
-        mic_keyword = mic_combobox.get()
-        voice_speaker_keyword = voice_speaker_combobox.get()
-        notification_speaker_keyword = notification_speaker_combobox.get()
+        """Save the selected display names to settings and close the window."""
+        mic_name = mic_combobox.get()
+        voice_speaker_name = voice_speaker_combobox.get()
+        notification_speaker_name = notification_speaker_combobox.get()
 
         settings = {
-            "mic_keyword": mic_keyword,
-            "voice_speaker_keyword": voice_speaker_keyword,
-            "notification_speaker_keyword": notification_speaker_keyword
+            "mic_keyword": mic_name,
+            "voice_speaker_keyword": voice_speaker_name,
+            "notification_speaker_keyword": notification_speaker_name
         }
 
         save_settings(settings)
         messagebox.showinfo("成功", "デバイスの設定が保存されました。")
         root.quit()
 
-    # Load available devices and settings
     device_list = list_devices()
     settings = load_settings()
+
+    mic_options = []
+    voice_speaker_options = []
+    notification_speaker_options = []
+
+    # Map from display_name → index
+    display_name_to_index = {}
+
+    for index, name, input_ch, output_ch in device_list:
+        display_name = f"{name}"
+        display_name_to_index[display_name] = index
+
+        if input_ch > 0:
+            mic_options.append(display_name)
+        if output_ch > 0:
+            voice_speaker_options.append(display_name)
+            notification_speaker_options.append(display_name)
 
     # Create the GUI window
     root = tk.Tk()
     root.title("マイクとスピーカー設定")
-    root.geometry("500x300")
-
-    # Device names for combobox options
-    device_names = [name for _, name, _, _ in device_list]
+    root.geometry("550x300")
 
     # Mic combobox
     tk.Label(root, text="🎤マイク:").pack(pady=5)
-    mic_combobox = ttk.Combobox(root, values=device_names, width=50)
+    mic_combobox = ttk.Combobox(root, values=mic_options, width=60)
     mic_combobox.pack(pady=5)
     mic_combobox.set(settings.get("mic_keyword", ""))
 
     # Speaker 1 combobox
     tk.Label(root, text="🔊音声スピーカー:").pack(pady=5)
-    voice_speaker_combobox = ttk.Combobox(root, values=device_names, width=50)
+    voice_speaker_combobox = ttk.Combobox(root, values=voice_speaker_options, width=60)
     voice_speaker_combobox.pack(pady=5)
     voice_speaker_combobox.set(settings.get("voice_speaker_keyword", ""))
 
     # Speaker 2 combobox
     tk.Label(root, text="🔔通知音用スピーカー:").pack(pady=5)
-    notification_speaker_combobox = ttk.Combobox(root, values=device_names, width=50)
+    notification_speaker_combobox = ttk.Combobox(root, values=notification_speaker_options, width=60)
     notification_speaker_combobox.pack(pady=5)
     notification_speaker_combobox.set(settings.get("notification_speaker_keyword", ""))
 
@@ -83,49 +103,36 @@ def show_device_selector():
 
     root.mainloop()
 
-# Select devices based on keywords
-def select_device_by_keyword(device_list, keyword, is_output=False):
-    """Select the first device that matches the given keyword."""
-    for index, name, input_channels, output_channels in device_list:
-        if keyword.lower() in name.lower():
-            if is_output and output_channels > 0:
-                return index, name
-            if not is_output and input_channels > 0:
-                return index, name
-    return None, None
+    return display_name_to_index
+
+# Get device index from saved display name
+def get_selected_device_indices(device_map, settings):
+    mic_index = device_map.get(settings.get("mic_keyword"))
+    voice_index = device_map.get(settings.get("voice_speaker_keyword"))
+    notification_index = device_map.get(settings.get("notification_speaker_keyword"))
+
+    return mic_index, voice_index, notification_index
 
 if __name__ == "__main__":
-    # Show the device selector UI
-    show_device_selector()
+    # Show the device selector UI and get the mapping
+    display_name_to_index = show_device_selector()
 
-    # Once the UI is closed, load the selected keywords from the settings file
+    # Load settings after GUI is closed
     settings = load_settings()
-    mic_keyword = settings.get("mic_keyword", "")
-    voice_speaker_keyword = settings.get("voice_speaker_keyword", "")
-    notification_speaker_keyword = settings.get("notification_speaker_keyword", "")
+    mic_index, voice_index, notification_index = get_selected_device_indices(display_name_to_index, settings)
 
-    # Get device list again
-    device_list = list_devices()
-
-    # Automatically select devices based on keywords
-    mic_index, mic_name = select_device_by_keyword(device_list, mic_keyword)
-    voice_output_device_index, voice_speaker_name = select_device_by_keyword(device_list, voice_speaker_keyword, is_output=True)
-    notification_output_device_index, notification_speaker_name = select_device_by_keyword(device_list, notification_speaker_keyword, is_output=True)
-
-    # Handle case when no matching devices are found
+    # Show results
     if mic_index is None:
-        print(f"キーワード'{mic_keyword}'を持つマイクが見つかりません。")
+        print(f"選択されたマイクが見つかりません：{settings.get('mic_keyword')}")
     else:
-        print(f"選択されたマイク: {mic_index} - {mic_name}")
+        print(f"選択されたマイク: {mic_index} - {settings.get('mic_keyword')}")
 
-    if voice_output_device_index is None:
-        print(f"キーワード'{voice_speaker_keyword}'を持つ音声スピーカーが見つかりません。")
+    if voice_index is None:
+        print(f"選択された音声スピーカーが見つかりません：{settings.get('voice_speaker_keyword')}")
     else:
-        print(f"選択された音声スピーカー： {voice_output_device_index} - {voice_speaker_name}")
+        print(f"選択された音声スピーカー: {voice_index} - {settings.get('voice_speaker_keyword')}")
 
-    if notification_output_device_index is None:
-        print(f"キーワード'{notification_speaker_keyword}'を持つ通知音用スピーカーが見つかりません。")
+    if notification_index is None:
+        print(f"選択された通知スピーカーが見つかりません：{settings.get('notification_speaker_keyword')}")
     else:
-        print(f"選択された音声スピーカー: {notification_output_device_index} - {notification_speaker_name}")
-
-    # Now you can use mic_index, voice_output_device_index, and notification_output_device_index in your main program logic
+        print(f"選択された通知スピーカー: {notification_index} - {settings.get('notification_speaker_keyword')}")
