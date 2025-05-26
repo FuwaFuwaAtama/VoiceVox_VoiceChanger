@@ -1,4 +1,4 @@
-# VoiceVox Voice Changer🎙️✨
+# VoiceVox Voice Changer（ふわふわボイチェン）🎙️✨
 
 **あなたの声をリアルタイムで好きなキャラクターの声に変換！ VRChatなどでのボイスチャット体験を豊かにします。**
 
